@@ -36,18 +36,21 @@ pub const BinaryStream = struct {
         return true;
     }
 
-    pub fn read(self: *BinaryStream, size: usize) []u8 {
-        var buffer: []u8 = self.buffer.items[self.offset..self.offset + size];
-        self.offset += size;
-        return buffer;
+    pub fn read(self: *BinaryStream, size: usize) ![]u8 {
+        if ((self.offset + size) < self.getSize()) {
+            var buffer: []u8 = self.buffer.items[self.offset..self.offset + size];
+            self.offset += size;
+            return buffer;
+        }
+        return error.EndOfStream;
     }
 
     pub fn write(self: *BinaryStream, buffer: []u8) !void {
         try self.buffer.appendSlice(buffer);
     }
 
-    pub fn readUnsignedByte(self: *BinaryStream) u8 {
-        var byteArray: []u8 = self.read(1);
+    pub fn readUnsignedByte(self: *BinaryStream) !u8 {
+        var byteArray: []u8 = try self.read(1);
         return byteArray[0];
     }
 
@@ -56,16 +59,16 @@ pub const BinaryStream = struct {
         try self.write(byteArray[0..1]);
     }
 
-    pub fn readByte(self: *BinaryStream) i8 {
-        return @bitCast(i8, self.readUnsignedByte());
+    pub fn readByte(self: *BinaryStream) !i8 {
+        return @bitCast(i8, try self.readUnsignedByte());
     }
 
     pub fn writeByte(self: *BinaryStream, value: i8) !void {
         try self.writeUnsignedByte(@bitCast(u8, value));
     }
 
-    pub fn readUnsignedShortLe(self: *BinaryStream) u16 {
-        var byteArray: []u8 = self.read(2);
+    pub fn readUnsignedShortLe(self: *BinaryStream) !u16 {
+        var byteArray: []u8 = try self.read(2);
         return @as(u16, byteArray[0]) | (@as(u16, byteArray[1]) << 8);
     }
 
@@ -77,16 +80,16 @@ pub const BinaryStream = struct {
         try self.write(byteArray[0..2]);
     }
 
-    pub fn readShortLe(self: *BinaryStream) i16 {
-        return @bitCast(i16, self.readUnsignedShortLe());
+    pub fn readShortLe(self: *BinaryStream) !i16 {
+        return @bitCast(i16, try self.readUnsignedShortLe());
     }
 
     pub fn writeShortLe(self: *BinaryStream, value: i16) !void {
         try self.writeUnsignedShortLe(@bitCast(u16, value));
     }
 
-    pub fn readUnsignedShortBe(self: *BinaryStream) u16 {
-        var byteArray: []u8 = self.read(2);
+    pub fn readUnsignedShortBe(self: *BinaryStream) !u16 {
+        var byteArray: []u8 = try self.read(2);
         return (@as(u16, byteArray[0]) << 8) | @as(u16, byteArray[1]);
     }
 
@@ -98,16 +101,16 @@ pub const BinaryStream = struct {
         try self.write(byteArray[0..2]);
     }
 
-    pub fn readShortBe(self: *BinaryStream) i16 {
-        return @bitCast(i16, self.readUnsignedShortBe());
+    pub fn readShortBe(self: *BinaryStream) !i16 {
+        return @bitCast(i16, try self.readUnsignedShortBe());
     }
 
     pub fn writeShortBe(self: *BinaryStream, value: i16) !void {
         try self.writeUnsignedShortBe(@bitCast(u16, value));
     }
 
-    pub fn readUnsignedTriadLe(self: *BinaryStream) u24 {
-        var byteArray: []u8 = self.read(3);
+    pub fn readUnsignedTriadLe(self: *BinaryStream) !u24 {
+        var byteArray: []u8 = try self.read(3);
         return @as(u24, byteArray[0]) | (@as(u24, byteArray[1]) << 8) | (@as(u24, byteArray[2]) << 16);
     }
 
@@ -120,16 +123,16 @@ pub const BinaryStream = struct {
         try self.write(byteArray[0..3]);
     }
 
-    pub fn readTriadLe(self: *BinaryStream) i24 {
-        return @bitCast(i24, self.readUnsignedTriadLe());
+    pub fn readTriadLe(self: *BinaryStream) !i24 {
+        return @bitCast(i24, try self.readUnsignedTriadLe());
     }
 
     pub fn writeTriadLe(self: *BinaryStream, value: i24) !void {
         try self.writeUnsignedTriadLe(@bitCast(u24, value));
     }
 
-    pub fn readUnsignedTriadBe(self: *BinaryStream) u24 {
-        var byteArray: []u8 = self.read(3);
+    pub fn readUnsignedTriadBe(self: *BinaryStream) !u24 {
+        var byteArray: []u8 = try self.read(3);
         return (@as(u24, byteArray[0]) << 16) | (@as(u24, byteArray[1]) << 8) | @as(u24, byteArray[2]);
     }
 
@@ -142,16 +145,16 @@ pub const BinaryStream = struct {
         try self.write(byteArray[0..3]);
     }
 
-    pub fn readTriadBe(self: *BinaryStream) i24 {
-        return @bitCast(i24, self.readUnsignedTriadBe());
+    pub fn readTriadBe(self: *BinaryStream) !i24 {
+        return @bitCast(i24, try self.readUnsignedTriadBe());
     }
 
     pub fn writeTriadBe(self: *BinaryStream, value: i24) !void {
         try self.writeUnsignedTriadBe(@bitCast(u24, value));
     }
 
-    pub fn readUnsignedIntLe(self: *BinaryStream) u32 {
-        var byteArray: []u8 = self.read(4);
+    pub fn readUnsignedIntLe(self: *BinaryStream) !u32 {
+        var byteArray: []u8 = try self.read(4);
         return @as(u32, byteArray[0]) | (@as(u32, byteArray[1]) << 8) | (@as(u32, byteArray[2]) << 16) | (@as(u32, byteArray[3]) << 24);
     }
 
@@ -165,16 +168,16 @@ pub const BinaryStream = struct {
         try self.write(byteArray[0..4]);
     }
 
-    pub fn readIntLe(self: *BinaryStream) i32 {
-        return @bitCast(i32, self.readUnsignedIntLe());
+    pub fn readIntLe(self: *BinaryStream) !i32 {
+        return @bitCast(i32, try self.readUnsignedIntLe());
     }
 
     pub fn writeIntLe(self: *BinaryStream, value: i32) !void {
         try self.writeUnsignedIntLe(@bitCast(u32, value));
     }
 
-    pub fn readUnsignedIntBe(self: *BinaryStream) u32 {
-        var byteArray: []u8 = self.read(4);
+    pub fn readUnsignedIntBe(self: *BinaryStream) !u32 {
+        var byteArray: []u8 = try self.read(4);
         return (@as(u32, byteArray[0]) << 24) | (@as(u32, byteArray[1]) << 16) | (@as(u32, byteArray[2]) << 8) | @as(u32, byteArray[3]);
     }
 
@@ -188,16 +191,16 @@ pub const BinaryStream = struct {
         try self.write(byteArray[0..4]);
     }
 
-    pub fn readIntBe(self: *BinaryStream) i32 {
-        return @bitCast(i32, self.readUnsignedIntBe());
+    pub fn readIntBe(self: *BinaryStream) !i32 {
+        return @bitCast(i32, try self.readUnsignedIntBe());
     }
 
     pub fn writeIntBe(self: *BinaryStream, value: i32) !void {
         try self.writeUnsignedIntBe(@bitCast(u32, value));
     }
 
-    pub fn readUnsignedLongLe(self: *BinaryStream) u64 {
-        var byteArray: []u8 = self.read(8);
+    pub fn readUnsignedLongLe(self: *BinaryStream) !u64 {
+        var byteArray: []u8 = try self.read(8);
         return @as(u64, byteArray[0]) | (@as(u64, byteArray[1]) << 8) | (@as(u64, byteArray[2]) << 16) | (@as(u64, byteArray[3]) << 24) | (@as(u64, byteArray[4]) << 32) | (@as(u64, byteArray[5]) << 40) | (@as(u64, byteArray[6]) << 48) | (@as(u64, byteArray[7]) << 56);
     }
 
@@ -215,16 +218,16 @@ pub const BinaryStream = struct {
         try self.write(byteArray[0..8]);
     }
 
-    pub fn readLongLe(self: *BinaryStream) i64 {
-        return @bitCast(i64, self.readUnsignedLongLe());
+    pub fn readLongLe(self: *BinaryStream) !i64 {
+        return @bitCast(i64, try self.readUnsignedLongLe());
     }
 
     pub fn writeLongLe(self: *BinaryStream, value: i64) !void {
         try self.writeUnsignedLongLe(@bitCast(u64, value));
     }
 
-    pub fn readUnsignedLongBe(self: *BinaryStream) u64 {
-        var byteArray: []u8 = self.read(8);
+    pub fn readUnsignedLongBe(self: *BinaryStream) !u64 {
+        var byteArray: []u8 = try self.read(8);
         return (@as(u64, byteArray[0]) << 56) | (@as(u64, byteArray[1]) << 48) | (@as(u64, byteArray[2]) << 40) | (@as(u64, byteArray[3]) << 32) | (@as(u64, byteArray[4]) << 24) | (@as(u64, byteArray[5]) << 16) | (@as(u64, byteArray[6]) << 8) | @as(u64, byteArray[7]);
     }
 
@@ -242,40 +245,40 @@ pub const BinaryStream = struct {
         try self.write(byteArray[0..8]);
     }
 
-    pub fn readLongBe(self: *BinaryStream) i64 {
-        return @bitCast(i64, self.readUnsignedLongBe());
+    pub fn readLongBe(self: *BinaryStream) !i64 {
+        return @bitCast(i64, try self.readUnsignedLongBe());
     }
 
     pub fn writeLongBe(self: *BinaryStream, value: i64) !void {
         try self.writeUnsignedLongBe(@bitCast(u64, value));
     }
     
-    pub fn readFloatLe(self: *BinaryStream) f32 {
-        return @bitCast(f32, self.readUnsignedIntLe());
+    pub fn readFloatLe(self: *BinaryStream) !f32 {
+        return @bitCast(f32, try self.readUnsignedIntLe());
     }
 
     pub fn writeFloatLe(self: *BinaryStream, value: f32) !void {
         try self.writeUnsignedIntLe(@bitCast(u32, value));
     }
      
-    pub fn readFloatBe(self: *BinaryStream) f32 {
-        return @bitCast(f32, self.readUnsignedIntBe());
+    pub fn readFloatBe(self: *BinaryStream) !f32 {
+        return @bitCast(f32, try self.readUnsignedIntBe());
     }
 
     pub fn writeFloatBe(self: *BinaryStream, value: f32) !void {
         try self.writeUnsignedIntBe(@bitCast(u32, value));
     }
     
-    pub fn readDoubleLe(self: *BinaryStream) f64 {
-        return @bitCast(f64, self.readUnsignedLongLe());
+    pub fn readDoubleLe(self: *BinaryStream) !f64 {
+        return @bitCast(f64, try self.readUnsignedLongLe());
     }
 
     pub fn writeDoubleLe(self: *BinaryStream, value: f64) !void {
         try self.writeUnsignedLongLe(@bitCast(u64, value));
     }
     
-    pub fn readDoubleBe(self: *BinaryStream) f64 {
-        return @bitCast(f64, self.readUnsignedLongBe());
+    pub fn readDoubleBe(self: *BinaryStream) !f64 {
+        return @bitCast(f64, try self.readUnsignedLongBe());
     }
 
     pub fn writeDoubleBe(self: *BinaryStream, value: f64) !void {
@@ -286,10 +289,7 @@ pub const BinaryStream = struct {
         var value: u32 = 0;
         var i: u5 = 0;
         while (i < 35) : (i += 7) {
-            if (self.isEndOfStream()) {
-                return error.EndOfStream;
-            }
-            var toRead: u8 = self.readUnsignedByte();
+            var toRead: u8 = try self.readUnsignedByte();
             value |= @as(u32, (toRead & 0x7f)) << i;
             if ((toRead & 0x80) == 0) {
                 return value;
@@ -328,10 +328,7 @@ pub const BinaryStream = struct {
         var value: u64 = 0;
         var i: u6 = 0;
         while (i < 70) : (i += 7) {
-            if (self.isEndOfStream()) {
-                return error.EndOfStream;
-            }
-            var toRead: u8 = self.readUnsignedByte();
+            var toRead: u8 = try self.readUnsignedByte();
             value |= @as(u64, (toRead & 0x7f)) << i;
             if ((toRead & 0x80) == 0) {
                 return value;
@@ -366,8 +363,8 @@ pub const BinaryStream = struct {
         try self.writeUnsignedVarLong(raw);
     }
 
-    pub fn readBool(self: *BinaryStream) bool {
-        return self.readUnsignedByte() != 0;
+    pub fn readBool(self: *BinaryStream) !bool {
+        return (try self.readUnsignedByte()) != 0;
     }
 
     pub fn writeBool(self: *BinaryStream, value: bool) !void {
